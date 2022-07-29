@@ -218,11 +218,11 @@ namespace RcloneMountGUI
             // If there is a new version of the application, it will ask for an update
             if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
             {
-                if (checkNewVersion("md5Link"))
+                if (!checkNewVersion("https://raw.githubusercontent.com/ImnLu/RcloneMountGUI/master/md5"))
                 {
                     if (MessageBox.Show("A new version of the app is available. Would you like to update?", "Update", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.OK)
                     {
-                        updateApp("appLink");
+                        updateApp("https://raw.githubusercontent.com/ImnLu/RcloneMountGUI/master/RcloneMountGUI.exe");
                     }
                 }
             }
