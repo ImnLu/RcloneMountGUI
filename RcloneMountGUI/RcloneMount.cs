@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
-using System.Windows.Forms;
 using System.IO;
-using Microsoft.Win32;
-using System.Security.Cryptography;
 using System.Net;
+using System.Security.Cryptography;
+using System.Windows.Forms;
 
 namespace RcloneMountGUI
 {
@@ -192,14 +192,36 @@ namespace RcloneMountGUI
 
             string appName = Path.GetFileName(System.Reflection.Assembly.GetEntryAssembly().Location);
             string tempFolder = Path.GetTempPath();
+            string appPath = Application.StartupPath;
 
             client.DownloadFile(appLink, tempFolder + appName);
 
-            if (File.Exists(tempFolder + appName + ".bak"))
-                File.Delete(tempFolder + appName + ".bak");
+            try
+            {
+                File.Move(appName, tempFolder + appName + ".bak");
+                File.Move(tempFolder + appName, appPath + "\\" + appName);
+            }
+            catch { }
+        }
 
-            File.Move(appName, tempFolder + appName + ".bak");
-            File.Move(tempFolder + appName, tempFolder);
+        public void clearOldVersion()
+        {
+            string appName = Path.GetFileName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            string tempFolder = Path.GetTempPath();
+
+            try
+            {
+                if (File.Exists(tempFolder + appName))
+                    File.Delete(tempFolder + appName);
+            }
+            catch { }
+
+            try
+            {
+                if (File.Exists(tempFolder + appName + ".bak"))
+                    File.Delete(tempFolder + appName + ".bak");
+            }
+            catch { }
         }
 
         #endregion
@@ -208,18 +230,7 @@ namespace RcloneMountGUI
 
         private void RcloneMount_Load(object sender, EventArgs e)
         {
-            // If there is a new version of the application, it will ask for an update
-            if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
-            {
-                if (!checkNewVersion("https://raw.githubusercontent.com/ImnLu/RcloneMountGUI/master/md5"))
-                {
-                    if (MessageBox.Show("A new version of the app is available. Would you like to update?", "Update", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.OK)
-                    {
-                        updateApp("https://raw.githubusercontent.com/ImnLu/RcloneMountGUI/master/RcloneMountGUI.exe");
-                        Application.Restart();
-                    }
-                }
-            }
+            backgroundWorkerRclone.RunWorkerAsync();
 
             // Starts the application according to the argument
             if (args.Length > 1)
@@ -232,6 +243,26 @@ namespace RcloneMountGUI
 
                         runTray();
                         RcloneStart();
+                    }
+                }
+            }
+        }
+
+        private void backgroundWorkerRclone_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            clearOldVersion();
+
+            System.Threading.Thread.Sleep(2500);
+
+            // If there is a new version of the application, it will ask for an update
+            if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            {
+                if (!checkNewVersion("https://raw.githubusercontent.com/ImnLu/RcloneMountGUI/master/md5"))
+                {
+                    if (MessageBox.Show("A new version of the app is available. Would you like to update?", "Rclone Mount Update", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
+                    {
+                        updateApp("https://raw.githubusercontent.com/ImnLu/RcloneMountGUI/master/RcloneMountGUI.exe");
+                        Application.Restart();
                     }
                 }
             }
@@ -274,6 +305,32 @@ namespace RcloneMountGUI
             RcloneKill();
         }
 
+        private void btnConfig_Click(object sender, EventArgs e)
+        {
+            if (String.IsNullOrEmpty(txtRLocation.Text))
+            {
+                MessageBox.Show("Please fill the 'Rclone Location'.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                // Opens rclone config settings
+
+                Hide();
+
+                rclonePath = Path.GetDirectoryName(txtRLocation.Text);
+                rcloneFileName = Path.GetFileNameWithoutExtension(txtRLocation.Text);
+
+                Process process = new Process();
+                process.StartInfo.FileName = "cmd.exe";
+                process.StartInfo.Arguments = "/C " + rcloneFileName + " config";
+                process.StartInfo.WorkingDirectory = rclonePath;
+                process.Start();
+                process.WaitForExit();
+
+                Show();
+            }
+        }
+
         private void checkBoxRAAS_CheckedChanged(object sender, EventArgs e)
         {
             // Run automatically at startup settings
@@ -287,6 +344,11 @@ namespace RcloneMountGUI
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
                 key.DeleteValue("RcloneMountGUI");
             }
+        }
+
+        private void linklblDocument_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("https://rclone.org/commands/rclone_mount/#vfs-file-caching");
         }
 
         private void RcloneMount_Resize(object sender, EventArgs e)

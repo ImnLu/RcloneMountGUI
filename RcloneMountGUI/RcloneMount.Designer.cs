@@ -45,6 +45,8 @@
             this.linklblDocument = new System.Windows.Forms.LinkLabel();
             this.checkBoxRAAS = new System.Windows.Forms.CheckBox();
             this.notifyIconRclone = new System.Windows.Forms.NotifyIcon(this.components);
+            this.backgroundWorkerRclone = new System.ComponentModel.BackgroundWorker();
+            this.btnConfig = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtRLocation
@@ -185,6 +187,7 @@
             this.linklblDocument.TabIndex = 104;
             this.linklblDocument.TabStop = true;
             this.linklblDocument.Text = "Documentation";
+            this.linklblDocument.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linklblDocument_LinkClicked);
             // 
             // checkBoxRAAS
             // 
@@ -207,11 +210,29 @@
             this.notifyIconRclone.Text = "Rclone Mount";
             this.notifyIconRclone.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIconRclone_MouseDoubleClick);
             // 
+            // backgroundWorkerRclone
+            // 
+            this.backgroundWorkerRclone.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerRclone_DoWork);
+            // 
+            // btnConfig
+            // 
+            this.btnConfig.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.btnConfig.Location = new System.Drawing.Point(15, 155);
+            this.btnConfig.Margin = new System.Windows.Forms.Padding(2);
+            this.btnConfig.Name = "btnConfig";
+            this.btnConfig.Size = new System.Drawing.Size(108, 35);
+            this.btnConfig.TabIndex = 106;
+            this.btnConfig.TabStop = false;
+            this.btnConfig.Text = "Config";
+            this.btnConfig.UseVisualStyleBackColor = true;
+            this.btnConfig.Click += new System.EventHandler(this.btnConfig_Click);
+            // 
             // RcloneMount
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(489, 251);
+            this.Controls.Add(this.btnConfig);
             this.Controls.Add(this.checkBoxRAAS);
             this.Controls.Add(this.linklblDocument);
             this.Controls.Add(this.btnUnmount);
@@ -258,6 +279,8 @@
         private System.Windows.Forms.LinkLabel linklblDocument;
         private System.Windows.Forms.CheckBox checkBoxRAAS;
         private System.Windows.Forms.NotifyIcon notifyIconRclone;
+        private System.ComponentModel.BackgroundWorker backgroundWorkerRclone;
+        private System.Windows.Forms.Button btnConfig;
     }
 }
 
